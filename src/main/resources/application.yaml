@@ -21,8 +21,9 @@ spring:
 
 logging:
   level:
-    org.hibernate.type : TRACE
-    org.hibernate.orm.jdbc.bind: TRACE
-    org.hibernate.engine.transaction.internal.TransactionImpl: DEBUG
-    org.springframework.orm.jpa: DEBUG
-    org.springframework.transaction: DEBUG
+    root: info
+#    org.hibernate.type : TRACE
+#    org.hibernate.orm.jdbc.bind: TRACE
+#    org.hibernate.engine.transaction.internal.TransactionImpl: DEBUG
+#    org.springframework.orm.jpa: DEBUG
+#    org.springframework.transaction: DEBUG

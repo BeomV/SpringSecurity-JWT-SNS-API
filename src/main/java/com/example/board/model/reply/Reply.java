@@ -1,37 +1,33 @@
-package com.example.board.model.post;
+package com.example.board.model.reply;
 
-import com.example.board.model.entity.PostEntity;
+import com.example.board.model.entity.ReplyEntity;
+import com.example.board.model.post.Post;
 import com.example.board.model.user.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.ZonedDateTime;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record Post
+public record Reply
         (
-        Long postId,
+        Long replyId,
         String body,
-        Long repliesCount,
-        Long likesCount,
         User user,
+        Post post,
         ZonedDateTime createdDataTime,
         ZonedDateTime updatedDataTime,
         ZonedDateTime deletedDataTime
-
         )
 {
-
-
-    public static Post from(PostEntity postEntity){
-        return new Post(
-                postEntity.getPostId(),
-                postEntity.getBody(),
-                postEntity.getRepliesCount(),
-                postEntity.getLikesCount(),
-                User.from(postEntity.getUser()),
-                postEntity.getCreatedDataTime(),
-                postEntity.getUpdatedDataTime(),
-                postEntity.getDeletedDataTime()
+    public static Reply from(ReplyEntity replyEntity){
+        return new Reply(
+                replyEntity.getReplyId(),
+                replyEntity.getBody(),
+                User.from(replyEntity.getUser()),
+                Post.from(replyEntity.getPost()),
+                replyEntity.getCreatedDataTime(),
+                replyEntity.getUpdatedDataTime(),
+                replyEntity.getDeletedDataTime()
         );
     }
 }
