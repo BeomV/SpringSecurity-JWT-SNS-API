@@ -7,6 +7,8 @@ import com.example.board.service.JwtService;
 import com.example.board.service.PostService;
 import com.example.board.service.UserService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,7 @@ import java.util.List;
 @RequestMapping("/api/v1/users")
 public class UserController {
 
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
     private final JwtService jwtService;
     private final PostService postService;
@@ -48,6 +51,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<User>> getUsers(@RequestParam(required = false) String query){
         var users = userService.getUsers(query);
+        log.info("/api/v1/users, GetMapping Ok..");
         return ResponseEntity.ok(users);
     }
 

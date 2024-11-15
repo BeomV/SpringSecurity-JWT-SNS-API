@@ -4,7 +4,7 @@ spring:
     show-sql: true
     hibernate:
       # create / create-drop / update / validate / none
-      ddl-auto: create-drop
+      ddl-auto: none
       format_sql: true
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl

@@ -29,26 +29,25 @@ public class WebConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000","http://127.0.0.1:3000"));
+        corsConfiguration.setAllowedOrigins(List.of("http://localhost:8080","http://127.0.0.1:8080"));
         corsConfiguration.setAllowedMethods(List.of("GET","POST","PATCH","DELETE"));
         corsConfiguration.setAllowedHeaders(List.of("*"));
         UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
-        urlBasedCorsConfigurationSource.registerCorsConfiguration("/api/v1/**",corsConfiguration);
+        urlBasedCorsConfigurationSource.registerCorsConfiguration("/**",corsConfiguration);
         return urlBasedCorsConfigurationSource;
     }
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(Customizer.withDefaults())
-                .authorizeHttpRequests(
-                        (requests) ->
-                                requests
-                                        .requestMatchers(HttpMethod.POST,"/api/v1/users","/api/*/users/authenticate")
-                                        .permitAll()
-                                        .anyRequest()
-                                        .authenticated())
-                .sessionManagement(
-                        (session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("/", "/index", "/js/**", "/css/**", "/images/**", "/favicon.ico","/user/login")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users", "/api/*/users/authenticate", "/")
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(CsrfConfigurer::disable)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtExceptionFilter, jwtAuthenticationFilter.getClass())
@@ -56,4 +55,6 @@ public class WebConfiguration {
 
         return http.build();
     }
+
 }
+

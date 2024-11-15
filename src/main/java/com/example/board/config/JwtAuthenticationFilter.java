@@ -40,7 +40,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throw new JwtTokenNotFoundException();
         }*/
 
-
         if(!ObjectUtils.isEmpty(authoriztion) && authoriztion.startsWith(BEARER_PREFIX) && securityContext.getAuthentication() == null){
 
             var accessToken = authoriztion.substring(BEARER_PREFIX.length());
