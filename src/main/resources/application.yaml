@@ -17,6 +17,15 @@ spring:
   security:
     user.name: board-admin
     user.password: board-admin-password
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: 1234
+
+jwt:
+  secret-key: secret
+  expiredMillis: 600
 
 
 logging:

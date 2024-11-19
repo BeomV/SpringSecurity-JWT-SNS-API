@@ -43,6 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if(!ObjectUtils.isEmpty(authoriztion) && authoriztion.startsWith(BEARER_PREFIX) && securityContext.getAuthentication() == null){
 
             var accessToken = authoriztion.substring(BEARER_PREFIX.length());
+
             var username = jwtService.getUsername(accessToken);
             var userDetails = userService.loadUserByUsername(username);
 

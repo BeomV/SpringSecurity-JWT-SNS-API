@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/css/style.css" />
+    <script th:src="@{/js/board.js}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board SNS HomePage</title>
+</head>
+<body>
+    <section class="main-container">
+        <nav>
+            <li><a href="/">HOME</a></li>
+            <li><a href="/board/board">BOARD</a></li>
+            <li><a href="/user/mypage">MYPAGE</a></li>
+            <li><a href="/user/login">LOGIN</a></li>
+        </nav>
+        <div class="board-container">
+            <table>
+                <thead>
+                    <colgroup>
+                        <col style="width: 10%;"> <!-- 번호 -->
+                        <col style="width: 50%;"> <!-- 제목 -->
+                        <col style="width: 15%;"> <!-- 글쓴이 -->
+                        <col style="width: 15%;"> <!-- 등록일 -->
+                        <col style="width: 10%;"> <!-- 조회 -->
+                    </colgroup>
+                    <tr>
+                        <th>번호</th>
+                        <th>제목</th>
+                        <th>글쓴이</th>
+                        <th>등록일</th>
+                        <th>조회</th>
+                    </tr>
+                </thead>
+                <tbody id="post-lists">
+                    <!-- 데이터 반복 -->
+                    <tr>
+                        <td>1</td> <!-- 글 번호 -->
+                        <td class="ellipsis">
+                            <a href="/board/boardDetail/{postId}">
+                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti harum fugiat totam saepe ipsum fuga aliquid, voluptate perspiciatis odio sint enim accusamus, delectus dolor quod veritatis fugit iusto eligendi quidem?
+                            </a>
+                        </td>
+                        <!-- 제목 -->
+                        <td>beom5110</td> <!-- 글쓴이 -->
+                        <td>11-15</td> <!-- 등록일 -->
+                        <td>0</td> <!-- 조회 -->
+                    </tr>
+                    
+                    <!-- 반복 데이터 추가 -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+</body>
+</html>

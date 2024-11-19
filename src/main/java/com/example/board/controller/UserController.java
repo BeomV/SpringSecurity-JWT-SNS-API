@@ -6,14 +6,22 @@ import com.example.board.model.user.*;
 import com.example.board.service.JwtService;
 import com.example.board.service.PostService;
 import com.example.board.service.UserService;
+import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -40,13 +48,16 @@ public class UserController {
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<UserAuthenticationResponse> authenticate(@Valid @RequestBody UserLoginRequestBody UserLoginRequestBody){
-        var response = userService.authenticate(
+    public ResponseEntity<UserAuthenticationResponse> authenticate(@Valid @RequestBody UserLoginRequestBody UserLoginRequestBody, HttpServletResponse response){
+        var userResponse = userService.authenticate(
                 UserLoginRequestBody.username(),
-                UserLoginRequestBody.password()
+                UserLoginRequestBody.password(),
+                response
         );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(userResponse);
     }
+
+
 
     @GetMapping
     public ResponseEntity<List<User>> getUsers(@RequestParam(required = false) String query){

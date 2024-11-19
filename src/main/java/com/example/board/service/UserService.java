@@ -3,6 +3,7 @@ package com.example.board.service;
 import com.example.board.exception.follow.FollowAlreadyExistsException;
 import com.example.board.exception.follow.FollowNotFoundException;
 import com.example.board.exception.follow.InvalidFollowException;
+import com.example.board.exception.jwt.JwtRefreshTokenExistsException;
 import com.example.board.exception.user.UserAlreadyExistsException;
 import com.example.board.exception.user.UserNotAllowedException;
 import com.example.board.exception.user.UserNotFoundException;
@@ -12,7 +13,11 @@ import com.example.board.model.user.User;
 import com.example.board.model.user.UserAuthenticationResponse;
 import com.example.board.model.user.UserPatchRequestBody;
 import com.example.board.repository.FollowRepository;
+import com.example.board.repository.RedisRepository;
 import com.example.board.repository.UserRepository;
+import com.example.board.util.CookieUtil;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class UserService implements UserDetailsService {
 
@@ -31,13 +37,17 @@ public class UserService implements UserDetailsService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final FollowRepository followRepository;
+    private final RedisService redisService;
+    private final RedisRepository redisRepository;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, BCryptPasswordEncoder passwordEncoder, JwtService jwtService, FollowRepository followRepository) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, BCryptPasswordEncoder passwordEncoder, JwtService jwtService, FollowRepository followRepository, RedisService redisService, RedisRepository redisRepository) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.followRepository = followRepository;
+        this.redisService = redisService;
+        this.redisRepository = redisRepository;
     }
 
     @Override
@@ -64,7 +74,8 @@ public class UserService implements UserDetailsService {
 
     }
 
-    public UserAuthenticationResponse authenticate(String username, String password) {
+    @Transactional
+    public UserAuthenticationResponse authenticate(String username, String password, HttpServletResponse response) {
 
         var userEntity = userRepository.findByUsername(username).orElseThrow(
                 () -> new UserNotFoundException(username)
@@ -72,6 +83,11 @@ public class UserService implements UserDetailsService {
 
         if(passwordEncoder.matches(password, userEntity.getPassword())){
             var accessToken = jwtService.generateAccessToken(userEntity);
+            var refreshToken = jwtService.generateRefreshToken(userEntity);
+
+            redisService.saveRefreshToken(userEntity.getUserId(),refreshToken);
+
+            response.addCookie(CookieUtil.createHttpOnlyCookie("refreshToken", refreshToken));
             return new UserAuthenticationResponse(accessToken);
         }
         else {
@@ -79,6 +95,25 @@ public class UserService implements UserDetailsService {
         }
 
     }
+
+    @Transactional
+    public UserAuthenticationResponse refreshAccessToken(String refreshToken, HttpServletResponse response) {
+        // Redis에서 RefreshToken 확인
+        var redisEntity = redisRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new JwtRefreshTokenExistsException());
+
+        // RefreshToken 유효성 검증
+        jwtService.validateRefreshToken(refreshToken);
+
+        // AccessToken 재발급
+        var user = userRepository.findById(redisEntity.getUserId())
+                .orElseThrow(() -> new UserNotFoundException("User not found for RefreshToken."));
+
+        var newAccessToken = jwtService.generateAccessToken(user);
+
+        return new UserAuthenticationResponse(newAccessToken);
+    }
+
 
     public List<User> getUsers(String query) {
         List<UserEntity> userEntities;

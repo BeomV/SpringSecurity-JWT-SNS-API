@@ -1,51 +1,90 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Page</title>
-</head>
-<body onload="loadMyPage()">
-<h1>Welcome to My Page</h1>
-<p>Username: <span id="username"></span></p>
-<p>Description: <span id="description"></span></p>
+    <title>Mypage</title>
+    <script>
+        // Access Token 갱신 함수
+        async function refreshAccessToken() {
+            try {
+                const refreshResponse = await fetch('/api/v1/refresh', {
+                    method: 'POST',
+                    credentials: 'include', // Refresh Token 쿠키 포함
+                });
 
-<script>
-    async function loadMyPage() {
-        const token = localStorage.getItem('jwt');
-        console.log(token);
-        if (!token) {
-            alert('You need to log in first.');
-            window.location.href = '/user/login';
-            return;
-        }
-
-        try {
-            // JWT를 포함하여 데이터 요청
-            const response = await fetch('/user/mypage', {
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${token}`, // JWT 토큰 추가
-                    'Content-Type': 'application/json'
+                if (refreshResponse.ok) {
+                    const newAccessToken = refreshResponse.headers.get('Authorization').split(' ')[1];
+                    localStorage.setItem('jwt', newAccessToken);
+                    return newAccessToken;
+                } else {
+                    alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+                    window.location = '/user/login';
                 }
-            });
-
-            if (response.ok) {
-                const userData = await response.json(); // 사용자 데이터를 JSON으로 받아옴
-                console.log('User data:', userData);
-                // 페이지 내용 업데이트
-                document.getElementById('username').textContent = userData.username;
-                document.getElementById('description').textContent = userData.description;
-            } else {
-                alert('Failed to load the page. Redirecting to login.');
-                window.location.href = '/user/login';
+            } catch (error) {
+                console.error('Error refreshing access token:', error);
+                alert('서버 에러가 발생했습니다. 다시 로그인해주세요.');
+                window.location = '/user/login';
             }
-        } catch (error) {
-            console.error('Error loading mypage:', error);
-            alert('An error occurred. Please try again later.');
         }
-    }
 
-</script>
+        // 사용자 정보를 가져오는 함수
+        async function fetchUserData() {
+            let token = localStorage.getItem('jwt');
+            if (!token) {
+                alert('로그인 정보가 없습니다.');
+                window.location = '/user/login';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/user/mypage', {
+                    method: 'GET',
+                    credentials: "include",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('username').textContent = user.username;
+                    document.getElementById('profile').src = user.profile;
+                    document.getElementById('description').textContent = user.description;
+                } else if (response.status === 401) { // Access Token 만료 시
+                    token = await refreshAccessToken();
+                    if (token) {
+                        // 새 토큰으로 재요청
+                        await fetchUserData();
+                    }
+                } else {
+                    alert('사용자 정보를 가져올 수 없습니다.');
+                    window.location = '/user/login';
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                alert('서버 에러가 발생했습니다.');
+            }
+        }
+
+        // 페이지 로드 시 사용자 데이터 가져오기
+        document.addEventListener('DOMContentLoaded', fetchUserData);
+    </script>
+</head>
+<body>
+<h1>Mypage</h1>
+<table>
+    <tr>
+        <td>Username</td>
+        <td id="username"></td>
+    </tr>
+    <tr>
+        <td>Profile</td>
+        <td><img id="profile" alt="Profile Image"></td>
+    </tr>
+    <tr>
+        <td>Description</td>
+        <td id="description"></td>
+    </tr>
+</table>
 </body>
 </html>

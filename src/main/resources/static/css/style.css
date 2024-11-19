@@ -1,0 +1,134 @@
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    list-style: none;
+    color: inherit;
+    text-decoration: none;
+    box-sizing: border-box;
+    font-family: 'Nanum Gothic', sans-serif;
+}
+
+body {
+    color: #333;
+}
+
+.main-container {
+    width: 1024px;
+    margin: 0 auto;
+}
+
+.main-container nav {
+    padding: 20px 0;
+    display: flex;
+    justify-content: space-evenly; /* 양쪽 정렬 */
+    align-items: center; /* 세로 가운데 정렬 */
+    border-bottom: 1px solid #ececec;
+    background-color: #fff;
+}
+
+.main-container nav li {
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+}
+
+.main-container nav li a {
+    color: inherit;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.main-container nav li a:hover {
+    text-decoration: underline;
+}
+
+.board-container {
+    margin: 20px 0;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.board-container table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.board-container th,
+.board-container td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    vertical-align: middle;
+}
+
+.board-container th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+    text-align: center;
+}
+
+.board-container td {
+    white-space: nowrap; /* 줄바꿈 방지 */
+    overflow: hidden; /* 넘치는 텍스트 숨김 */
+    text-overflow: ellipsis; /* 텍스트 줄임 표시 */
+}
+
+.board-container td.ellipsis {
+    max-width: 300px; /* 최대 너비 제한 */
+}
+
+.post-detail-container {
+    margin: 50px 0;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.post-detail-container table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    margin-top: 20px;
+}
+
+.post-detail-container th,
+.post-detail-container td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    vertical-align: top;
+}
+
+.post-detail-container th {
+    width: 20%;
+    background-color: #f4f4f4;
+    font-weight: bold;
+    text-align: center;
+}
+
+.boardBody{
+    justify-content: center;
+    align-content: center;
+}
+
+
+@media screen and (max-width: 768px) {
+    .main-container {
+        width: 90%;
+    }
+
+    .main-container nav li {
+        font-size: 14px;
+    }
+
+    .board-container td.ellipsis {
+        max-width: 150px; /* 작은 화면에서 너비 축소 */
+    }
+}

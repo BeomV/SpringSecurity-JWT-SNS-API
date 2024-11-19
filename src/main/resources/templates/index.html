@@ -1,13 +1,22 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Main Page</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board SNS HomePage</title>
 </head>
 <body>
-<div class="login-container">
-    <a th:href="@{/user/login}">Login</a>
+    <section class="main-container">
+        <nav>
+            <li><a href="/">HOME</a></li>
+            <li><a href="/board/board">BOARD</a></li>
+            <li><a href="/user/mypage">MYPAGE</a></li>
+            <li><a href="/user/login">LOGIN</a></li>
+        </nav>
 
-</div>
+    </section>
+
+
 </body>
 </html>

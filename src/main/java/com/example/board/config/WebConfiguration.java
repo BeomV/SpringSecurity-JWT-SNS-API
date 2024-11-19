@@ -29,9 +29,10 @@ public class WebConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(List.of("http://localhost:8080","http://127.0.0.1:8080"));
+        corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000","http://127.0.0.1:3000"));
         corsConfiguration.setAllowedMethods(List.of("GET","POST","PATCH","DELETE"));
         corsConfiguration.setAllowedHeaders(List.of("*"));
+        corsConfiguration.setAllowCredentials(true); // TODO: CORS 설정 시 자격 증명 허용 (XSS 방지 강화)
         UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
         urlBasedCorsConfigurationSource.registerCorsConfiguration("/**",corsConfiguration);
         return urlBasedCorsConfigurationSource;
@@ -43,7 +44,9 @@ public class WebConfiguration {
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/", "/index", "/js/**", "/css/**", "/images/**", "/favicon.ico","/user/login")
                         .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users", "/api/*/users/authenticate", "/")
+                        .requestMatchers(HttpMethod.GET,"/user/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/**", "/api/*/users/authenticate", "/")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
