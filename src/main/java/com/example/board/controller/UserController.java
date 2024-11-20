@@ -54,8 +54,21 @@ public class UserController {
                 UserLoginRequestBody.password(),
                 response
         );
+
         return ResponseEntity.ok(userResponse);
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<UserRefershAccessTokenResponse> refreshAccessToken(HttpServletRequest request){
+        var refreshToken = jwtService.generateRefreshAccessToken(request);
+        return ResponseEntity.ok(refreshToken);
+    }
+
+    @PostMapping("/logout")
+        public ResponseEntity<UserLogoutResponse> userLogout(HttpServletRequest request, HttpServletResponse response){
+        var userLogout = userService.userLogoutAndClearToken(response);
+        return ResponseEntity.ok(userLogout);
+        }
 
 
 

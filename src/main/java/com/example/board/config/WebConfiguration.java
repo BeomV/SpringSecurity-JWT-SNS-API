@@ -42,11 +42,11 @@ public class WebConfiguration {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(Customizer.withDefaults())
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/", "/index", "/js/**", "/css/**", "/images/**", "/favicon.ico","/user/login")
+                        .requestMatchers("/", "/index", "/js/**", "/css/**", "/images/**", "/favicon.ico", "/user/login")
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET,"/user/**")
+                        .requestMatchers(HttpMethod.GET, "/user/**")
                         .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/**", "/api/*/users/authenticate", "/")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users", "/api/v1/users/authenticate", "/","/api/v1/users/refresh","/api/v1/users/logout")
                         .permitAll()
                         .anyRequest()
                         .authenticated())

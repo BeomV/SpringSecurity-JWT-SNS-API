@@ -3,22 +3,24 @@ package com.example.board.service;
 import com.example.board.exception.follow.FollowAlreadyExistsException;
 import com.example.board.exception.follow.FollowNotFoundException;
 import com.example.board.exception.follow.InvalidFollowException;
-import com.example.board.exception.jwt.JwtRefreshTokenExistsException;
 import com.example.board.exception.user.UserAlreadyExistsException;
+import com.example.board.exception.user.UserAlreadyLogOutException;
 import com.example.board.exception.user.UserNotAllowedException;
 import com.example.board.exception.user.UserNotFoundException;
 import com.example.board.model.entity.FollowEntity;
 import com.example.board.model.entity.UserEntity;
 import com.example.board.model.user.User;
 import com.example.board.model.user.UserAuthenticationResponse;
+import com.example.board.model.user.UserLogoutResponse;
 import com.example.board.model.user.UserPatchRequestBody;
 import com.example.board.repository.FollowRepository;
-import com.example.board.repository.RedisRepository;
 import com.example.board.repository.UserRepository;
 import com.example.board.util.CookieUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -37,17 +39,16 @@ public class UserService implements UserDetailsService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final FollowRepository followRepository;
-    private final RedisService redisService;
-    private final RedisRepository redisRepository;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, BCryptPasswordEncoder passwordEncoder, JwtService jwtService, FollowRepository followRepository, RedisService redisService, RedisRepository redisRepository) {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, BCryptPasswordEncoder passwordEncoder, JwtService jwtService, FollowRepository followRepository) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.followRepository = followRepository;
-        this.redisService = redisService;
-        this.redisRepository = redisRepository;
     }
 
     @Override
@@ -85,8 +86,6 @@ public class UserService implements UserDetailsService {
             var accessToken = jwtService.generateAccessToken(userEntity);
             var refreshToken = jwtService.generateRefreshToken(userEntity);
 
-            redisService.saveRefreshToken(userEntity.getUserId(),refreshToken);
-
             response.addCookie(CookieUtil.createHttpOnlyCookie("refreshToken", refreshToken));
             return new UserAuthenticationResponse(accessToken);
         }
@@ -96,23 +95,6 @@ public class UserService implements UserDetailsService {
 
     }
 
-    @Transactional
-    public UserAuthenticationResponse refreshAccessToken(String refreshToken, HttpServletResponse response) {
-        // Redis에서 RefreshToken 확인
-        var redisEntity = redisRepository.findByRefreshToken(refreshToken)
-                .orElseThrow(() -> new JwtRefreshTokenExistsException());
-
-        // RefreshToken 유효성 검증
-        jwtService.validateRefreshToken(refreshToken);
-
-        // AccessToken 재발급
-        var user = userRepository.findById(redisEntity.getUserId())
-                .orElseThrow(() -> new UserNotFoundException("User not found for RefreshToken."));
-
-        var newAccessToken = jwtService.generateAccessToken(user);
-
-        return new UserAuthenticationResponse(newAccessToken);
-    }
 
 
     public List<User> getUsers(String query) {
@@ -218,5 +200,21 @@ public class UserService implements UserDetailsService {
 
         var followEntities = followRepository.findByFollower(follower);
         return followEntities.stream().map(follow -> User.from(follow.getFollowing())).toList();
+    }
+
+    @Transactional
+    public UserLogoutResponse userLogoutAndClearToken(HttpServletResponse response) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getName() == null || "anonymousUser".equals(authentication.getName())) {
+            throw new UserNotAllowedException();
+        }
+        String username = authentication.getName();
+        CookieUtil.deleteCookie(response, "refreshToken");
+
+        SecurityContextHolder.clearContext();
+
+        return new UserLogoutResponse(username,"User Success Logged Out");
+
     }
 }
